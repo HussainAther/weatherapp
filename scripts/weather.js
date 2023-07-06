@@ -1,6 +1,6 @@
 // OpenWeather API endpoint for current weather and forecast
 const currentWeatherURL = 'https://api.openweathermap.org/data/2.5/onecall';
-const apiKey = 'your_api_key';
+const apiKey = 'e9e6a5ee0ae50574cbfee017b1d3741b';
 
 // Function to fetch weather data
 async function fetchWeatherData(lat, lon) {
