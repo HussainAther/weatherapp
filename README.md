@@ -10,6 +10,7 @@ The app works with both US and Canadian ZIP Codes and also contains functionalit
 - Forecast: Get an 8-day weather forecast for the provided ZIP code.
 - Historical Weather (Optional): If you have an API key, you can access historical weather data.
 - City Photos: Display a photo of the city obtained from Unsplash API.
+- Geolocation: Use browser geolocation to obtain the user's current location. 
 
 ## APIs Used
 
