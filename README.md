@@ -29,16 +29,16 @@ To obtain this, go to the Google Cloud Console, create a new project or select a
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/weather-app.git
+   git clone https://github.com/HussainAther/weatherapp/
    ```
 
 2. Navigate to the project directory:
 
     ```bash
-    cd weather-app
+    cd weatherapp
     ```
 
-3. Open the index.html file in a web browser.
+3. Open the `index.html` file in a web browser.
 
 ## Usage
 1. Enter a ZIP code in the provided input field.
@@ -74,7 +74,6 @@ In `index.html`:
 Weather icons from: https://stock.adobe.com/24218050?sdid=DMMD1BPP&mv=social&mv2=orgsoc&as_channel=social_ads&as_campclass=brand&as_campaign=Ecommerce&as_source=Pinterest&as_camptype=acquisitions&as_audience=users
 
 Icons sourced from Adobe Stock, licensed under the Adobe Standard License.
-
 
 ## License
 This project is licensed under the MIT License.
