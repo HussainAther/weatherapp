@@ -288,7 +288,6 @@ function displayWeatherData(weatherData) {
   }
 }
 
-// Function to create weather card element
 function createWeatherCard(
   title,
   temperature,
@@ -324,17 +323,50 @@ function createWeatherCard(
   humidityElement.innerHTML = `Humidity: <span class="highlight">${humidity}%</span>`;
   weatherCard.appendChild(humidityElement);
 
-  const rainElement = document.createElement('p');
-  rainElement.innerHTML = `Rain: <span class="highlight">${rain} mm</span>`;
-  weatherCard.appendChild(rainElement);
+  if (rain !== undefined && rain !== 0) {
+    const rainElement = document.createElement('p');
+    rainElement.innerHTML = `Rain: <span class="highlight">${rain} mm</span>`;
+    weatherCard.appendChild(rainElement);
 
-  const snowElement = document.createElement('p');
-  snowElement.innerHTML = `Snow: <span class="highlight">${snow} mm</span>`;
-  weatherCard.appendChild(snowElement);
+    const rainIcon = document.createElement('img');
+    rainIcon.src = 'img/raindrop.png'; // Path to rain icon image
+    rainIcon.alt = 'Rain Icon';
+    weatherCard.appendChild(rainIcon);
+  }
 
-  const cloudsElement = document.createElement('p');
-  cloudsElement.innerHTML = `Clouds: <span class="highlight">${clouds}%</span>`;
-  weatherCard.appendChild(cloudsElement);
+  if (snow !== undefined && snow !== 0) {
+    const snowElement = document.createElement('p');
+    snowElement.innerHTML = `Snow: <span class="highlight">${snow} mm</span>`;
+    weatherCard.appendChild(snowElement);
+
+    const snowIcon = document.createElement('img');
+    snowIcon.src = 'img/snowflake.png'; // Path to snow icon image
+    snowIcon.alt = 'Snow Icon';
+    weatherCard.appendChild(snowIcon);
+  }
+
+  if (clouds !== undefined) {
+    if (clouds > 30 && clouds < 50) {
+      const cloudIcon = document.createElement('img');
+      cloudIcon.src = 'img/oneblankcloud.png'; // Path to one blank cloud icon image
+      cloudIcon.alt = 'One Blank Cloud Icon';
+      weatherCard.appendChild(cloudIcon);
+    } else if (clouds >= 50) {
+      const cloudIcon = document.createElement('img');
+      cloudIcon.src = 'img/twoblanksclouds.png'; // Path to two blank clouds icon image
+      cloudIcon.alt = 'Two Blank Clouds Icon';
+      weatherCard.appendChild(cloudIcon);
+    } else {
+      const sunIcon = document.createElement('img');
+      sunIcon.src = 'img/sun.png'; // Path to sun icon image
+      sunIcon.alt = 'Sun Icon';
+      weatherCard.appendChild(sunIcon);
+    }
+
+    const cloudsElement = document.createElement('p');
+    cloudsElement.innerHTML = `Clouds: <span class="highlight">${clouds}%</span>`;
+    weatherCard.appendChild(cloudsElement);
+  }
 
   const windElement = document.createElement('p');
   windElement.innerHTML = `Wind: <span class="highlight">${windSpeed} m/s, ${windDegree}°</span>`;
