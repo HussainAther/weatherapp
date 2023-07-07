@@ -6,6 +6,7 @@ const historicalWeatherURL = 'https://history.openweathermap.org/data/2.5/histor
 const openweatherAccessKey = 'your_openweather_api_key';
 const historicalAccessKey = 'your_historical_api_key'; // Leave empty if not using historical data
 const unsplashAccessKey = 'your_unsplash_api_key';
+const googlemapsAccessKey = 'your_googlemaps_api_key'; // Leave unchanged if you don't want to retrieve your own ZIP code
 
 let isMetric = false; // Flag to track temperature unit (false: Fahrenheit, true: Celsius)
 
@@ -409,20 +410,68 @@ function handleSearch() {
     });
 }
 
+// Function to reverse geocode the coordinates and retrieve the zip code
+async function reverseGeocode(latitude, longitude) {
+  try {
+    const reverseGeocodeURL = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googlemapsAccessKey}`;
+
+    const response = await fetch(reverseGeocodeURL);
+    const data = await response.json();
+
+    if (response.status !== 200) {
+      throw new Error(data.error_message || 'Reverse geocoding failed');
+    }
+
+    const results = data.results;
+    if (results.length > 0) {
+      for (const result of results) {
+        for (const component of result.address_components) {
+          if (component.types.includes('postal_code')) {
+            return component.short_name;
+          }
+        }
+      }
+    }
+
+    throw new Error('Zip code not found in the reverse geocoding results');
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
 // Function to fetch weather data based on geolocation
 function fetchWeatherByGeolocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
 
-        fetchWeatherDataByGeolocation(latitude, longitude)
-          .then(displayWeatherData)
-          .catch((error) => {
-            console.log('Error:', error);
-            alert('Error occurred while fetching weather data. Please try again.');
-          });
+        if (googlemapsAccessKey === 'your_googlemaps_api_key') {
+          console.log('Google Maps API key is not provided.');
+          alert('Google Maps API key is not provided.');
+          return;
+        }
+
+        try {
+          const zipCode = await reverseGeocode(latitude, longitude);
+
+          fetchWeatherData(zipCode)
+            .then((weatherData) => {
+              displayWeatherData(weatherData);
+
+              // Update the search input field with the user's current zip code
+              const zipCodeInput = document.getElementById('zip-input');
+              zipCodeInput.value = zipCode;
+            })
+            .catch((error) => {
+              console.log('Error:', error);
+              alert('Error occurred while fetching weather data. Please try again.');
+            });
+        } catch (error) {
+          console.log('Reverse geocoding error:', error);
+          alert('Error occurred while reverse geocoding. Please try again.');
+        }
       },
       (error) => {
         console.log('Geolocation error:', error);
@@ -434,6 +483,8 @@ function fetchWeatherByGeolocation() {
     alert('Geolocation is not supported by this browser.');
   }
 }
+
+
 
 // Function to fetch weather data using geolocation coordinates
 async function fetchWeatherDataByGeolocation(latitude, longitude) {
