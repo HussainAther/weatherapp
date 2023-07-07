@@ -1,34 +1,39 @@
 // OpenWeather API endpoint for current weather and forecast
 const currentWeatherURL = 'https://api.openweathermap.org/data/2.5/weather';
 const forecastURL = 'https://api.openweathermap.org/data/2.5/onecall';
-const apiKey = 'your_api_key';
+const apiKey = 'e9e6a5ee0ae50574cbfee017b1d3741b';
 
 // Function to fetch weather data
 async function fetchWeatherData(zipCode) {
-  const currentWeatherParams = `zip=${zipCode}&appid=${apiKey}`;
-  const currentWeatherURLWithParams = `${currentWeatherURL}?${currentWeatherParams}`;
+  try {
+    const currentWeatherParams = `zip=${zipCode}&appid=${apiKey}`;
+    const currentWeatherURLWithParams = `${currentWeatherURL}?${currentWeatherParams}`;
 
-  const currentWeatherResponse = await fetch(currentWeatherURLWithParams);
-  const currentWeatherData = await currentWeatherResponse.json();
+    const currentWeatherResponse = await fetch(currentWeatherURLWithParams);
+    const currentWeatherData = await currentWeatherResponse.json();
 
-  if (currentWeatherData.cod !== 200) {
-    throw new Error(currentWeatherData.message);
+    if (currentWeatherResponse.status !== 200) {
+      throw new Error(currentWeatherData.message);
+    }
+
+    const { lat, lon } = currentWeatherData.coord;
+
+    const forecastParams = `lat=${lat}&lon=${lon}&exclude=minutely,hourly&appid=${apiKey}`;
+    const forecastURLWithParams = `${forecastURL}?${forecastParams}`;
+
+    const forecastResponse = await fetch(forecastURLWithParams);
+    const forecastData = await forecastResponse.json();
+
+    if (forecastResponse.status !== 200) {
+      throw new Error(forecastData.message);
+    }
+
+    return { current: currentWeatherData, forecast: forecastData.daily };
+  } catch (error) {
+    throw new Error(error.message);
   }
-
-  const { lat, lon } = currentWeatherData.coord;
-
-  const forecastParams = `lat=${lat}&lon=${lon}&exclude=minutely,hourly&appid=${apiKey}`;
-  const forecastURLWithParams = `${forecastURL}?${forecastParams}`;
-
-  const forecastResponse = await fetch(forecastURLWithParams);
-  const forecastData = await forecastResponse.json();
-
-  if (forecastData.cod !== '200') {
-    throw new Error(forecastData.message);
-  }
-
-  return { current: currentWeatherData, forecast: forecastData.daily };
 }
+
 
 // Function to convert temperature from Kelvin to Fahrenheit
 function convertKelvinToFahrenheit(kelvin) {
@@ -111,6 +116,7 @@ function handleSearch() {
       alert('Error occurred while fetching weather data. Please try again.');
     });
 }
+
 
 // Attach event listener to search button
 const searchButton = document.getElementById('search-button');
