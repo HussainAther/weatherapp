@@ -1,6 +1,6 @@
 // OpenWeather API endpoint for current weather and forecast
 const currentWeatherURL = 'https://api.openweathermap.org/data/2.5/onecall';
-const apiKey = 'your_api_key';
+const apiKey = 'e9e6a5ee0ae50574cbfee017b1d3741b';
 
 // Function to fetch weather data
 async function fetchWeatherData(lat, lon) {
@@ -27,6 +27,8 @@ function displayWeatherData(weatherData) {
   const currentWeatherCard = createWeatherCard(
     'Current Weather',
     convertKelvinToFahrenheit(currentWeather.temp).toFixed(1),
+    convertKelvinToFahrenheit(currentWeather.temp_max).toFixed(1),
+    convertKelvinToFahrenheit(currentWeather.temp_min).toFixed(1),
     currentWeather.humidity
   );
   weatherContainer.appendChild(currentWeatherCard);
@@ -35,7 +37,9 @@ function displayWeatherData(weatherData) {
   forecast.forEach((day, index) => {
     const forecastCard = createWeatherCard(
       `Day ${index + 1} Forecast`,
+      convertKelvinToFahrenheit(day.temp.day).toFixed(1),
       convertKelvinToFahrenheit(day.temp.max).toFixed(1),
+      convertKelvinToFahrenheit(day.temp.min).toFixed(1),
       day.humidity
     );
     weatherContainer.appendChild(forecastCard);
@@ -43,7 +47,7 @@ function displayWeatherData(weatherData) {
 }
 
 // Function to create weather card element
-function createWeatherCard(title, temperature, humidity) {
+function createWeatherCard(title, temperature, highTemperature, lowTemperature, humidity) {
   const weatherCard = document.createElement('div');
   weatherCard.classList.add('weather-card');
 
@@ -54,6 +58,14 @@ function createWeatherCard(title, temperature, humidity) {
   const temperatureElement = document.createElement('p');
   temperatureElement.innerHTML = `Temperature: <span class="highlight">${temperature}°F</span>`;
   weatherCard.appendChild(temperatureElement);
+
+  const highTemperatureElement = document.createElement('p');
+  highTemperatureElement.innerHTML = `High: <span class="highlight">${highTemperature}°F</span>`;
+  weatherCard.appendChild(highTemperatureElement);
+
+  const lowTemperatureElement = document.createElement('p');
+  lowTemperatureElement.innerHTML = `Low: <span class="highlight">${lowTemperature}°F</span>`;
+  weatherCard.appendChild(lowTemperatureElement);
 
   const humidityElement = document.createElement('p');
   humidityElement.innerHTML = `Humidity: <span class="highlight">${humidity}%</span>`;
