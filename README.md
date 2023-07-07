@@ -53,6 +53,13 @@ const unsplashAccessKey = 'your_unsplash_api_key';
 
 Make sure to replace 'your_openweather_api_key', 'your_historical_api_key', and 'your_unsplash_api_key' with your respective API keys.
 
+## Sources
+
+Weather icons from: https://stock.adobe.com/24218050?sdid=DMMD1BPP&mv=social&mv2=orgsoc&as_channel=social_ads&as_campclass=brand&as_campaign=Ecommerce&as_source=Pinterest&as_camptype=acquisitions&as_audience=users
+
+Icons sourced from Adobe Stock, licensed under the Adobe Standard License.
+
+
 ## License
 This project is licensed under the MIT License.
 
