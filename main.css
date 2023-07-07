@@ -57,6 +57,13 @@ h1 {
   margin-top: 10px;
 }
 
+#geolocation-container {
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Center the geolocation button vertically */
+  margin-top: 10px;
+}
+
 #temperature-toggle {
   padding: 10px 20px;
   font-size: 18px;
@@ -72,6 +79,25 @@ h1 {
 }
 
 #temperature-toggle:hover {
+  background-color: #555;
+}
+
+
+#geolocation-button {
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  outline: none;
+  display: flex;
+  justify-content: center;
+}
+
+#geolocation-button:hover {
   background-color: #555;
 }
 

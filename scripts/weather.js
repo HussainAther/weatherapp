@@ -131,13 +131,6 @@ async function fetchHistoricalWeatherData(lat, lon) {
 // Function to fetch weather data
 async function fetchWeatherData(zipCode) {
   try {
-    // const isCanadianPostalCode = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(zipCode);
-
-    // if (isCanadianPostalCode) {
-    //   const zipCodePrefix = zipCode.slice(0, 3);
-    // }
-
-    // const currentWeather = await fetchCurrentWeatherData(zipCode);
     const isCanadianPostalCode = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(zipCode);
 
     let currentWeatherParams; // Declare the variable outside the if statement
@@ -416,6 +409,105 @@ function handleSearch() {
     });
 }
 
+// Function to fetch weather data based on geolocation
+function fetchWeatherByGeolocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+
+        fetchWeatherDataByGeolocation(latitude, longitude)
+          .then(displayWeatherData)
+          .catch((error) => {
+            console.log('Error:', error);
+            alert('Error occurred while fetching weather data. Please try again.');
+          });
+      },
+      (error) => {
+        console.log('Geolocation error:', error);
+        alert('Error occurred while fetching geolocation. Please try again.');
+      }
+    );
+  } else {
+    console.log('Geolocation is not supported by this browser.');
+    alert('Geolocation is not supported by this browser.');
+  }
+}
+
+// Function to fetch weather data using geolocation coordinates
+async function fetchWeatherDataByGeolocation(latitude, longitude) {
+  try {
+    const currentWeatherParams = `lat=${latitude}&lon=${longitude}&appid=${openweatherAccessKey}`;
+    const currentWeatherURLWithParams = `${currentWeatherURL}?${currentWeatherParams}`;
+
+    const currentWeatherResponse = await fetch(currentWeatherURLWithParams);
+    const currentWeatherData = await currentWeatherResponse.json();
+
+    if (currentWeatherResponse.status !== 200) {
+      throw new Error(currentWeatherData.message);
+    }
+
+    const { lat, lon } = currentWeatherData.coord;
+    let historicalWeather = [];
+
+    if (historicalAccessKey) {
+      historicalWeather = await fetchHistoricalWeatherData(lat, lon);
+    }
+    const cityName = currentWeatherData.name;
+
+    const forecastParams = `lat=${currentWeatherData.coord.lat}&lon=${currentWeatherData.coord.lon}&exclude=minutely,hourly&appid=${openweatherAccessKey}`;
+    const forecastURLWithParams = `${forecastURL}?${forecastParams}`;
+
+    const forecastResponse = await fetch(forecastURLWithParams);
+    const forecastData = await forecastResponse.json();
+
+    if (forecastResponse.status !== 200) {
+      throw new Error(forecastData.message);
+    }
+
+    // Extract weather information for the current weather
+    const currentWeatherInfo = {
+      temperature: currentWeatherData.main.temp,
+      humidity: currentWeatherData.main.humidity,
+      temperatureMin: currentWeatherData.main.temp_min, // Fix: changed from temperatureMin to temp_min
+      temperatureMax: currentWeatherData.main.temp_max, 
+      rain: currentWeatherData.rain?.['1h'] || 0,
+      snow: currentWeatherData.snow?.['1h'] || 0,
+      clouds: currentWeatherData.clouds.all,
+      windSpeed: currentWeatherData.wind.speed,
+      windDegree: currentWeatherData.wind.deg,
+    };    
+
+    const weatherData = {
+      current: currentWeatherInfo,
+      forecast: forecastData.daily,
+      historical: historicalWeather,
+    };
+
+    // Fetch city photo from Unsplash
+    const unsplashParams = `query=${cityName}&client_id=${unsplashAccessKey}`;
+    const unsplashURLWithParams = `${unsplashURL}?${unsplashParams}`;
+
+    const unsplashResponse = await fetch(unsplashURLWithParams);
+    const unsplashData = await unsplashResponse.json();
+
+    if (unsplashResponse.status !== 200) {
+      throw new Error(unsplashData.errors[0]);
+    }
+
+    const cityPhoto = unsplashData.results[0]?.urls.regular;
+
+    // Add city photo URL to weather data
+    weatherData.cityPhoto = cityPhoto;
+
+    return weatherData;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
+
 // Function to handle temperature unit toggle
 function handleToggle() {
   const toggleButton = document.getElementById('temperature-toggle');
@@ -431,3 +523,6 @@ searchButton.addEventListener('click', handleSearch);
 // Attach event listener to temperature unit toggle button
 const toggleButton = document.getElementById('temperature-toggle');
 toggleButton.addEventListener('click', handleToggle);
+
+const geolocationButton = document.getElementById('geolocation-button');
+geolocationButton.addEventListener('click', fetchWeatherByGeolocation);
