@@ -2,13 +2,15 @@
 const currentWeatherURL = 'https://api.openweathermap.org/data/2.5/weather';
 const forecastURL = 'https://api.openweathermap.org/data/2.5/onecall';
 const unsplashURL = 'https://api.unsplash.com/search/photos';
-const openweatherAccessKey = 'your_api_key';
-const unsplashAccessKey = 'your_api_key';
+const historicalWeatherURL = 'https://history.openweathermap.org/data/2.5/history/city';
+const openweatherAccessKey = 'your_openweather_api_key';
+const historicalAccessKey = 'your_historical_api_key';
+const unsplashAccessKey = 'your_upslash_api_key';
 
 let isMetric = false; // Flag to track temperature unit (false: Fahrenheit, true: Celsius)
 
-// Function to fetch weather data
-async function fetchWeatherData(zipCode) {
+// Function to fetch current weather data
+async function fetchCurrentWeatherData(zipCode) {
   try {
     const currentWeatherParams = `zip=${zipCode}&appid=${openweatherAccessKey}`;
     const currentWeatherURLWithParams = `${currentWeatherURL}?${currentWeatherParams}`;
@@ -20,6 +22,57 @@ async function fetchWeatherData(zipCode) {
       throw new Error(currentWeatherData.message);
     }
 
+    return currentWeatherData;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
+// Function to fetch historical weather data
+async function fetchHistoricalWeatherData(lat, lon) {
+  try {
+    const historicalWeatherParams = `lat=${lat}&lon=${lon}&appid=${historicalAccessKey}`;
+    const historicalWeatherURLWithParams = `${historicalWeatherURL}?${historicalWeatherParams}`;
+
+    if (historicalAccessKey !== 'your_historical_api_key') {
+      const historicalWeatherResponse = await fetch(historicalWeatherURLWithParams);
+      const historicalWeatherData = await historicalWeatherResponse.json();
+
+      if (historicalWeatherResponse.status !== 200) {
+        throw new Error(historicalWeatherData.message);
+      }
+
+      const weatherList = historicalWeatherData.list.map((item) => ({
+        temperature: item.main.temp,
+        humidity: item.main.humidity,
+        minTemperature: item.main.temp_min,
+        maxTemperature: item.main.temp_max,
+      }));
+
+      return weatherList;
+    } else {
+      return []; // Return an empty array if historicalAccessKey is not provided
+    }
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
+// Function to fetch weather data
+async function fetchWeatherData(zipCode) {
+  try {
+    const currentWeather = await fetchCurrentWeatherData(zipCode);
+    const currentWeatherParams = `zip=${zipCode}&appid=${openweatherAccessKey}`;
+    const currentWeatherURLWithParams = `${currentWeatherURL}?${currentWeatherParams}`;
+
+    const currentWeatherResponse = await fetch(currentWeatherURLWithParams);
+    const currentWeatherData = await currentWeatherResponse.json();
+    const { lat, lon } = currentWeather.coord;
+    let historicalWeather = [];
+
+    if (historicalAccessKey) {
+      historicalWeather = await fetchHistoricalWeatherData(lat, lon);
+    }
     const cityName = currentWeatherData.name;
 
     const forecastParams = `lat=${currentWeatherData.coord.lat}&lon=${currentWeatherData.coord.lon}&exclude=minutely,hourly&appid=${openweatherAccessKey}`;
@@ -32,7 +85,7 @@ async function fetchWeatherData(zipCode) {
       throw new Error(forecastData.message);
     }
 
-    const weatherData = { current: currentWeatherData, forecast: forecastData.daily };
+    const weatherData = { current: currentWeather, forecast: forecastData.daily, historical: historicalWeather };
 
     // Fetch city photo from Unsplash
     const unsplashParams = `query=${cityName}&client_id=${unsplashAccessKey}`;
@@ -71,12 +124,12 @@ function convertTemperature(temp) {
 function displayWeatherData(weatherData) {
   const currentWeather = weatherData.current;
   const forecast = weatherData.forecast;
+  const historicalWeather = weatherData.historical;
   const cityPhoto = weatherData.cityPhoto;
 
   // Example: Updating the weather container HTML
   const weatherContainer = document.getElementById('weather-container');
   weatherContainer.innerHTML = '';
-
 
   // Display current weather
   const currentWeatherCard = createWeatherCard(
@@ -88,27 +141,40 @@ function displayWeatherData(weatherData) {
   );
   weatherContainer.appendChild(currentWeatherCard);
 
-  // Display forecast
-  forecast.forEach((day, index) => {
-    const forecastCard = createWeatherCard(
-      `Day ${index + 1} Forecast`,
-      convertTemperature(day.temp.day),
-      convertTemperature(day.temp.max),
-      convertTemperature(day.temp.min),
-      day.humidity
-    );
-    weatherContainer.appendChild(forecastCard);
-  });
-  // Display city photo
-  const photoContainer = document.getElementById('photo-container');
-  if (cityPhoto) {
-    const photoElement = document.createElement('img');
-    photoElement.src = cityPhoto;
-    photoContainer.innerHTML = '';
-    photoContainer.appendChild(photoElement);
-  } else {
-    photoContainer.innerHTML = 'No photo available';
+  // Display historical weather if available
+  if (historicalWeather.length > 0) {
+    historicalWeather.forEach((historicalItem) => {
+      const historicalWeatherCard = createWeatherCard(
+        `Historical Weather (${new Date(historicalItem.dt * 1000).toLocaleDateString()})`,
+        convertTemperature(historicalItem.temperature),
+        convertTemperature(historicalItem.maxTemperature),
+        convertTemperature(historicalItem.minTemperature),
+        historicalItem.humidity
+      );
+      weatherContainer.appendChild(historicalWeatherCard);
+    });
   }
+    // Display forecast
+    forecast.forEach((day, index) => {
+      const forecastCard = createWeatherCard(
+        `Day ${index + 1} Forecast`,
+        convertTemperature(day.temp.day),
+        convertTemperature(day.temp.max),
+        convertTemperature(day.temp.min),
+        day.humidity
+      );
+      weatherContainer.appendChild(forecastCard);
+    });
+    // Display city photo
+    const photoContainer = document.getElementById('photo-container');
+    if (cityPhoto) {
+      const photoElement = document.createElement('img');
+      photoElement.src = cityPhoto;
+      photoContainer.innerHTML = '';
+      photoContainer.appendChild(photoElement);
+    } else {
+      photoContainer.innerHTML = 'No photo available';
+    }
 }
 
 // Function to create weather card element
