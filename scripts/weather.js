@@ -2,8 +2,8 @@
 const currentWeatherURL = 'https://api.openweathermap.org/data/2.5/weather';
 const forecastURL = 'https://api.openweathermap.org/data/2.5/onecall';
 const unsplashURL = 'https://api.unsplash.com/search/photos';
-const openweatherAccessKey = 'e9e6a5ee0ae50574cbfee017b1d3741b';
-const unsplashAccessKey = 'I62VXJxbiosjTmWUquPZlXoMkkEfG8Mto3EhAEA2r6Y';
+const openweatherAccessKey = 'your_api_key';
+const unsplashAccessKey = 'your_api_key';
 
 let isMetric = false; // Flag to track temperature unit (false: Fahrenheit, true: Celsius)
 
