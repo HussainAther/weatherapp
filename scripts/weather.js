@@ -1,13 +1,33 @@
 // OpenWeather API endpoint for current weather and forecast
-const currentWeatherURL = 'https://api.openweathermap.org/data/2.5/onecall';
-const apiKey = 'e9e6a5ee0ae50574cbfee017b1d3741b';
+const currentWeatherURL = 'https://api.openweathermap.org/data/2.5/weather';
+const forecastURL = 'https://api.openweathermap.org/data/2.5/onecall';
+const apiKey = 'your_api_key';
 
 // Function to fetch weather data
-async function fetchWeatherData(lat, lon) {
-  const url = `${currentWeatherURL}?lat=${lat}&lon=${lon}&appid=${apiKey}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  return data;
+async function fetchWeatherData(zipCode) {
+  const currentWeatherParams = `zip=${zipCode}&appid=${apiKey}`;
+  const currentWeatherURLWithParams = `${currentWeatherURL}?${currentWeatherParams}`;
+
+  const currentWeatherResponse = await fetch(currentWeatherURLWithParams);
+  const currentWeatherData = await currentWeatherResponse.json();
+
+  if (currentWeatherData.cod !== 200) {
+    throw new Error(currentWeatherData.message);
+  }
+
+  const { lat, lon } = currentWeatherData.coord;
+
+  const forecastParams = `lat=${lat}&lon=${lon}&exclude=minutely,hourly&appid=${apiKey}`;
+  const forecastURLWithParams = `${forecastURL}?${forecastParams}`;
+
+  const forecastResponse = await fetch(forecastURLWithParams);
+  const forecastData = await forecastResponse.json();
+
+  if (forecastData.cod !== '200') {
+    throw new Error(forecastData.message);
+  }
+
+  return { current: currentWeatherData, forecast: forecastData.daily };
 }
 
 // Function to convert temperature from Kelvin to Fahrenheit
@@ -18,7 +38,7 @@ function convertKelvinToFahrenheit(kelvin) {
 // Function to display weather information
 function displayWeatherData(weatherData) {
   const currentWeather = weatherData.current;
-  const forecast = weatherData.daily;
+  const forecast = weatherData.forecast;
 
   const weatherContainer = document.getElementById('weather-container');
   weatherContainer.innerHTML = '';
@@ -26,10 +46,10 @@ function displayWeatherData(weatherData) {
   // Display current weather
   const currentWeatherCard = createWeatherCard(
     'Current Weather',
-    convertKelvinToFahrenheit(currentWeather.temp).toFixed(1),
-    convertKelvinToFahrenheit(currentWeather.temp_max).toFixed(1),
-    convertKelvinToFahrenheit(currentWeather.temp_min).toFixed(1),
-    currentWeather.humidity
+    convertKelvinToFahrenheit(currentWeather.main.temp).toFixed(1),
+    convertKelvinToFahrenheit(currentWeather.main.temp_max).toFixed(1),
+    convertKelvinToFahrenheit(currentWeather.main.temp_min).toFixed(1),
+    currentWeather.main.humidity
   );
   weatherContainer.appendChild(currentWeatherCard);
 
@@ -74,13 +94,24 @@ function createWeatherCard(title, temperature, highTemperature, lowTemperature, 
   return weatherCard;
 }
 
-// Example usage: Fetch weather data for a specific location
-const latitude = 37.7749; // Replace with desired latitude
-const longitude = -122.4194; // Replace with desired longitude
+// Function to handle search button click
+function handleSearch() {
+  const zipCodeInput = document.getElementById('zip-input');
+  const zipCode = zipCodeInput.value.trim();
 
-fetchWeatherData(latitude, longitude)
-  .then(displayWeatherData)
-  .catch((error) => {
-    console.log('Error:', error);
-  });
+  if (zipCode === '') {
+    alert('Please enter a ZIP code.');
+    return;
+  }
 
+  fetchWeatherData(zipCode)
+    .then(displayWeatherData)
+    .catch((error) => {
+      console.log('Error:', error);
+      alert('Error occurred while fetching weather data. Please try again.');
+    });
+}
+
+// Attach event listener to search button
+const searchButton = document.getElementById('search-button');
+searchButton.addEventListener('click', handleSearch);
