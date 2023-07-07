@@ -53,13 +53,19 @@ In the `weather.js` file, you need to set the following API access keys:
 * unsplashAccessKey: Your Unsplash API key for retrieving city photos.
 * googlemapsAccessKey: Your Google Maps API key for converting latitude and longitude coordinates into a ZIP code. 
 
-Make sure to replace 'your_openweather_api_key', 'your_historical_api_key', 'your_unsplash_api_key', and 'your_googlemaps_api_key' with your respective API keys.
+Make sure to replace 'your_openweather_api_key', 'your_historical_api_key', 'your_unsplash_api_key', and 'your_googlemaps_api_key' with your respective API keys in the `scripts/weather.js` and `index.html` files.
 
+In `scripts/weather.js`:
 ```
 const openweatherAccessKey = 'your_openweather_api_key';
 const historicalAccessKey = 'your_historical_api_key'; // Leave empty if not using historical data
 const unsplashAccessKey = 'your_unsplash_api_key';
-const googlemapsAccessKey = 'your_googlemaps_api_key';
+const googlemapsAccessKey = 'your_googlemaps_api_key'; // Leave unchanged if you don't want to retrieve your own ZIP code
+```
+
+In `index.html`: 
+```
+<script src="https://maps.googleapis.com/maps/api/js?key={your_googlemaps_api_key}&libraries=places"></script>
 ```
 
 ## Sources
