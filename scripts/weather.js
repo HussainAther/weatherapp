@@ -4,8 +4,8 @@ const forecastURL = 'https://api.openweathermap.org/data/2.5/onecall';
 const unsplashURL = 'https://api.unsplash.com/search/photos';
 const historicalWeatherURL = 'https://history.openweathermap.org/data/2.5/history/city';
 const openweatherAccessKey = 'your_openweather_api_key';
-const historicalAccessKey = 'your_historical_api_key';
-const unsplashAccessKey = 'your_upslash_api_key';
+const historicalAccessKey = 'your_historical_api_key'; // Leave empty if not using historical data
+const unsplashAccessKey = 'your_unsplash_api_key';
 
 let isMetric = false; // Flag to track temperature unit (false: Fahrenheit, true: Celsius)
 
@@ -22,7 +22,70 @@ async function fetchCurrentWeatherData(zipCode) {
       throw new Error(currentWeatherData.message);
     }
 
-    return currentWeatherData;
+    const {
+      coord,
+      weather,
+      base,
+      main,
+      visibility,
+      wind,
+      rain,
+      snow,
+      clouds,
+      dt,
+      sys,
+      timezone,
+      id,
+      name,
+      cod
+    } = currentWeatherData;
+
+    const currentWeather = {
+      coordinates: {
+        lon: coord.lon,
+        lat: coord.lat
+      },
+      weather: {
+        id: weather[0].id,
+        main: weather[0].main,
+        description: weather[0].description,
+        icon: weather[0].icon
+      },
+      base,
+      main: {
+        temperature: main.temp,
+        feelsLike: main.feels_like,
+        temperatureMin: main.temp_min,
+        temperatureMax: main.temp_max,
+        pressure: main.pressure,
+        humidity: main.humidity,
+        seaLevel: main.sea_level,
+        groundLevel: main.grnd_level
+      },
+      visibility,
+      wind: {
+        speed: wind.speed,
+        degree: wind.deg,
+        gust: wind.gust
+      },
+      rain: rain ? rain['1h'] : 0,
+      snow: snow ? snow['1h'] : 0,
+      clouds: clouds.all,
+      dt,
+      sys: {
+        type: sys.type,
+        id: sys.id,
+        country: sys.country,
+        sunrise: sys.sunrise,
+        sunset: sys.sunset
+      },
+      timezone,
+      id,
+      name,
+      cod
+    };
+
+    return currentWeather;
   } catch (error) {
     throw new Error(error.message);
   }
@@ -67,7 +130,7 @@ async function fetchWeatherData(zipCode) {
 
     const currentWeatherResponse = await fetch(currentWeatherURLWithParams);
     const currentWeatherData = await currentWeatherResponse.json();
-    const { lat, lon } = currentWeather.coord;
+    const { lat, lon } = currentWeatherData.coord;
     let historicalWeather = [];
 
     if (historicalAccessKey) {
@@ -85,7 +148,24 @@ async function fetchWeatherData(zipCode) {
       throw new Error(forecastData.message);
     }
 
-    const weatherData = { current: currentWeather, forecast: forecastData.daily, historical: historicalWeather };
+    // Extract weather information for the current weather
+    const currentWeatherInfo = {
+      temperature: currentWeatherData.main.temp,
+      humidity: currentWeatherData.main.humidity,
+      temperatureMin: currentWeatherData.main.temp_min, // Fix: changed from temperatureMin to temp_min
+      temperatureMax: currentWeatherData.main.temp_max, 
+      rain: currentWeatherData.rain?.['1h'] || 0,
+      snow: currentWeatherData.snow?.['1h'] || 0,
+      clouds: currentWeatherData.clouds.all,
+      windSpeed: currentWeatherData.wind.speed,
+      windDegree: currentWeatherData.wind.deg,
+    };    
+
+    const weatherData = {
+      current: currentWeatherInfo,
+      forecast: forecastData.daily,
+      historical: historicalWeather,
+    };
 
     // Fetch city photo from Unsplash
     const unsplashParams = `query=${cityName}&client_id=${unsplashAccessKey}`;
@@ -109,6 +189,7 @@ async function fetchWeatherData(zipCode) {
   }
 }
 
+
 // Function to convert temperature from Kelvin to Celsius or Fahrenheit
 function convertTemperature(temp) {
   if (isMetric) {
@@ -119,6 +200,18 @@ function convertTemperature(temp) {
     return ((temp - 273.15) * (9 / 5) + 32).toFixed(1) + '°F';
   }
 }
+
+// Function to convert wind speed from meters per second to the desired unit
+function convertWindSpeed(speed) {
+  if (isMetric) {
+    // Convert to meters per second
+    return `${speed} m/s`;
+  } else {
+    // Convert to miles per hour
+    return `${(speed * 2.23694).toFixed(1)} mph`;
+  }
+}
+
 
 // Function to display weather information
 function displayWeatherData(weatherData) {
@@ -131,14 +224,20 @@ function displayWeatherData(weatherData) {
   const weatherContainer = document.getElementById('weather-container');
   weatherContainer.innerHTML = '';
 
-  // Display current weather
   const currentWeatherCard = createWeatherCard(
     'Current Weather',
-    convertTemperature(currentWeather.main.temp),
-    convertTemperature(currentWeather.main.temp_max),
-    convertTemperature(currentWeather.main.temp_min),
-    currentWeather.main.humidity
+    convertTemperature(currentWeather.temperature),
+    convertTemperature(currentWeather.temperatureMax),
+    convertTemperature(currentWeather.temperatureMin),
+    currentWeather.humidity,
+    currentWeather.rain,
+    currentWeather.snow,
+    currentWeather.clouds,
+    convertWindSpeed(currentWeather.windSpeed),
+    currentWeather.windDegree
   );
+  
+  
   weatherContainer.appendChild(currentWeatherCard);
 
   // Display historical weather if available
@@ -149,36 +248,59 @@ function displayWeatherData(weatherData) {
         convertTemperature(historicalItem.temperature),
         convertTemperature(historicalItem.maxTemperature),
         convertTemperature(historicalItem.minTemperature),
-        historicalItem.humidity
+        historicalItem.humidity,
+        historicalItem.rain,
+        historicalItem.snow,
+        historicalItem.clouds,
+        convertWindSpeed(historicalItem.wind.speed),
+        historicalItem.wind.degree
       );
       weatherContainer.appendChild(historicalWeatherCard);
     });
   }
-    // Display forecast
-    forecast.forEach((day, index) => {
-      const forecastCard = createWeatherCard(
-        `Day ${index + 1} Forecast`,
-        convertTemperature(day.temp.day),
-        convertTemperature(day.temp.max),
-        convertTemperature(day.temp.min),
-        day.humidity
-      );
-      weatherContainer.appendChild(forecastCard);
-    });
-    // Display city photo
-    const photoContainer = document.getElementById('photo-container');
-    if (cityPhoto) {
-      const photoElement = document.createElement('img');
-      photoElement.src = cityPhoto;
-      photoContainer.innerHTML = '';
-      photoContainer.appendChild(photoElement);
-    } else {
-      photoContainer.innerHTML = 'No photo available';
-    }
+
+  // Display forecast
+  forecast.forEach((day, index) => {
+    const forecastCard = createWeatherCard(
+      `Day ${index + 1} Forecast`,
+      convertTemperature(day.temp.day),
+      convertTemperature(day.temp.max),
+      convertTemperature(day.temp.min),
+      day.humidity,
+      day.rain,
+      day.snow,
+      day.clouds,
+      convertWindSpeed(day.wind_speed),
+      day.wind_deg
+    );
+    weatherContainer.appendChild(forecastCard);
+  });
+
+  // Display city photo
+  const photoContainer = document.getElementById('photo-container');
+  if (cityPhoto) {
+    const photoElement = document.createElement('img');
+    photoElement.src = cityPhoto;
+    photoContainer.innerHTML = '';
+    photoContainer.appendChild(photoElement);
+  } else {
+    photoContainer.innerHTML = 'No photo available';
+  }
 }
 
 // Function to create weather card element
-function createWeatherCard(title, temperature, highTemperature, lowTemperature, humidity) {
+function createWeatherCard(
+  title,
+  temperature,
+  highTemperature,
+  lowTemperature,
+  humidity,
+  rain,
+  snow,
+  clouds,
+  windSpeed,
+  windDegree
+) {
   const weatherCard = document.createElement('div');
   weatherCard.classList.add('weather-card');
 
@@ -201,6 +323,22 @@ function createWeatherCard(title, temperature, highTemperature, lowTemperature, 
   const humidityElement = document.createElement('p');
   humidityElement.innerHTML = `Humidity: <span class="highlight">${humidity}%</span>`;
   weatherCard.appendChild(humidityElement);
+
+  const rainElement = document.createElement('p');
+  rainElement.innerHTML = `Rain: <span class="highlight">${rain} mm</span>`;
+  weatherCard.appendChild(rainElement);
+
+  const snowElement = document.createElement('p');
+  snowElement.innerHTML = `Snow: <span class="highlight">${snow} mm</span>`;
+  weatherCard.appendChild(snowElement);
+
+  const cloudsElement = document.createElement('p');
+  cloudsElement.innerHTML = `Clouds: <span class="highlight">${clouds}%</span>`;
+  weatherCard.appendChild(cloudsElement);
+
+  const windElement = document.createElement('p');
+  windElement.innerHTML = `Wind: <span class="highlight">${windSpeed} m/s, ${windDegree}°</span>`;
+  weatherCard.appendChild(windElement);
 
   return weatherCard;
 }
