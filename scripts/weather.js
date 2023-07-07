@@ -12,9 +12,16 @@ let isMetric = false; // Flag to track temperature unit (false: Fahrenheit, true
 // Function to fetch current weather data
 async function fetchCurrentWeatherData(zipCode) {
   try {
-    const currentWeatherParams = `zip=${zipCode}&appid=${openweatherAccessKey}`;
-    const currentWeatherURLWithParams = `${currentWeatherURL}?${currentWeatherParams}`;
+    const isCanadianPostalCode = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(zipCode);
 
+    let currentWeatherURLWithParams;
+    if (isCanadianPostalCode) {
+      const zipCodePrefix = zipCode.slice(0, 3);
+      currentWeatherURLWithParams = `${currentWeatherURL}?zip=${zipCodePrefix},ca&appid=${openweatherAccessKey}`;
+    } else {
+      currentWeatherURLWithParams = `${currentWeatherURL}?zip=${zipCode},us&appid=${openweatherAccessKey}`;
+    }
+    console.log(currentWeatherURLWithParams);
     const currentWeatherResponse = await fetch(currentWeatherURLWithParams);
     const currentWeatherData = await currentWeatherResponse.json();
 
@@ -124,8 +131,24 @@ async function fetchHistoricalWeatherData(lat, lon) {
 // Function to fetch weather data
 async function fetchWeatherData(zipCode) {
   try {
-    const currentWeather = await fetchCurrentWeatherData(zipCode);
-    const currentWeatherParams = `zip=${zipCode}&appid=${openweatherAccessKey}`;
+    // const isCanadianPostalCode = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(zipCode);
+
+    // if (isCanadianPostalCode) {
+    //   const zipCodePrefix = zipCode.slice(0, 3);
+    // }
+
+    // const currentWeather = await fetchCurrentWeatherData(zipCode);
+    const isCanadianPostalCode = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(zipCode);
+
+    let currentWeatherParams; // Declare the variable outside the if statement
+
+    if (isCanadianPostalCode) {
+      const zipCodePrefix = zipCode.slice(0, 3);
+      currentWeatherParams = `zip=${zipCodePrefix},ca&appid=${openweatherAccessKey}`; // Assign value inside the if block
+    } else {
+      currentWeatherParams = `zip=${zipCode},us&appid=${openweatherAccessKey}`; // Assign value inside the else block
+    }
+    
     const currentWeatherURLWithParams = `${currentWeatherURL}?${currentWeatherParams}`;
 
     const currentWeatherResponse = await fetch(currentWeatherURLWithParams);
