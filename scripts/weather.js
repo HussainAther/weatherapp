@@ -2,8 +2,10 @@
 const currentWeatherURL = 'https://api.openweathermap.org/data/2.5/weather';
 const forecastURL = 'https://api.openweathermap.org/data/2.5/onecall';
 const unsplashURL = 'https://api.unsplash.com/search/photos';
-const openweatherAccessKey = 'your_api_key';
-const unsplashAccessKey = 'your_api_key';
+const openweatherAccessKey = 'e9e6a5ee0ae50574cbfee017b1d3741b';
+const unsplashAccessKey = 'I62VXJxbiosjTmWUquPZlXoMkkEfG8Mto3EhAEA2r6Y';
+
+let isMetric = false; // Flag to track temperature unit (false: Fahrenheit, true: Celsius)
 
 // Function to fetch weather data
 async function fetchWeatherData(zipCode) {
@@ -54,11 +56,15 @@ async function fetchWeatherData(zipCode) {
   }
 }
 
-
-
-// Function to convert temperature from Kelvin to Fahrenheit
-function convertKelvinToFahrenheit(kelvin) {
-  return (kelvin - 273.15) * (9 / 5) + 32;
+// Function to convert temperature from Kelvin to Celsius or Fahrenheit
+function convertTemperature(temp) {
+  if (isMetric) {
+    // Convert to Celsius
+    return ((temp - 273.15)).toFixed(1) + '°C';
+  } else {
+    // Convert to Fahrenheit
+    return ((temp - 273.15) * (9 / 5) + 32).toFixed(1) + '°F';
+  }
 }
 
 // Function to display weather information
@@ -75,9 +81,9 @@ function displayWeatherData(weatherData) {
   // Display current weather
   const currentWeatherCard = createWeatherCard(
     'Current Weather',
-    convertKelvinToFahrenheit(currentWeather.main.temp).toFixed(1),
-    convertKelvinToFahrenheit(currentWeather.main.temp_max).toFixed(1),
-    convertKelvinToFahrenheit(currentWeather.main.temp_min).toFixed(1),
+    convertTemperature(currentWeather.main.temp),
+    convertTemperature(currentWeather.main.temp_max),
+    convertTemperature(currentWeather.main.temp_min),
     currentWeather.main.humidity
   );
   weatherContainer.appendChild(currentWeatherCard);
@@ -86,23 +92,23 @@ function displayWeatherData(weatherData) {
   forecast.forEach((day, index) => {
     const forecastCard = createWeatherCard(
       `Day ${index + 1} Forecast`,
-      convertKelvinToFahrenheit(day.temp.day).toFixed(1),
-      convertKelvinToFahrenheit(day.temp.max).toFixed(1),
-      convertKelvinToFahrenheit(day.temp.min).toFixed(1),
+      convertTemperature(day.temp.day),
+      convertTemperature(day.temp.max),
+      convertTemperature(day.temp.min),
       day.humidity
     );
     weatherContainer.appendChild(forecastCard);
   });
-    // Display city photo
-    const photoContainer = document.getElementById('photo-container');
-    if (cityPhoto) {
-      const photoElement = document.createElement('img');
-      photoElement.src = cityPhoto;
-      photoContainer.innerHTML = '';
-      photoContainer.appendChild(photoElement);
-    } else {
-      photoContainer.innerHTML = 'No photo available';
-    }
+  // Display city photo
+  const photoContainer = document.getElementById('photo-container');
+  if (cityPhoto) {
+    const photoElement = document.createElement('img');
+    photoElement.src = cityPhoto;
+    photoContainer.innerHTML = '';
+    photoContainer.appendChild(photoElement);
+  } else {
+    photoContainer.innerHTML = 'No photo available';
+  }
 }
 
 // Function to create weather card element
@@ -115,15 +121,15 @@ function createWeatherCard(title, temperature, highTemperature, lowTemperature, 
   weatherCard.appendChild(titleElement);
 
   const temperatureElement = document.createElement('p');
-  temperatureElement.innerHTML = `Temperature: <span class="highlight">${temperature}°F</span>`;
+  temperatureElement.innerHTML = `Temperature: <span class="highlight">${temperature}</span>`;
   weatherCard.appendChild(temperatureElement);
 
   const highTemperatureElement = document.createElement('p');
-  highTemperatureElement.innerHTML = `High: <span class="highlight">${highTemperature}°F</span>`;
+  highTemperatureElement.innerHTML = `High: <span class="highlight">${highTemperature}</span>`;
   weatherCard.appendChild(highTemperatureElement);
 
   const lowTemperatureElement = document.createElement('p');
-  lowTemperatureElement.innerHTML = `Low: <span class="highlight">${lowTemperature}°F</span>`;
+  lowTemperatureElement.innerHTML = `Low: <span class="highlight">${lowTemperature}</span>`;
   weatherCard.appendChild(lowTemperatureElement);
 
   const humidityElement = document.createElement('p');
@@ -151,7 +157,18 @@ function handleSearch() {
     });
 }
 
+// Function to handle temperature unit toggle
+function handleToggle() {
+  const toggleButton = document.getElementById('temperature-toggle');
+  isMetric = !isMetric;
+  toggleButton.textContent = isMetric ? 'Switch to Fahrenheit' : 'Switch to Celsius';
+  handleSearch(); // Re-fetch and display weather data with updated temperature unit
+}
 
 // Attach event listener to search button
 const searchButton = document.getElementById('search-button');
 searchButton.addEventListener('click', handleSearch);
+
+// Attach event listener to temperature unit toggle button
+const toggleButton = document.getElementById('temperature-toggle');
+toggleButton.addEventListener('click', handleToggle);

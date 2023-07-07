@@ -11,6 +11,7 @@ h1 {
   font-size: 32px;
   font-weight: bold;
   text-transform: uppercase;
+  text-align: center; /* Center the title */
 }
 
 .container {
@@ -46,6 +47,31 @@ h1 {
 }
 
 #search-button:hover {
+  background-color: #555;
+}
+
+#toggle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Center the temperature toggle button vertically */
+  margin-top: 10px;
+}
+
+#temperature-toggle {
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  outline: none;
+  display: flex;
+  justify-content: center;
+}
+
+#temperature-toggle:hover {
   background-color: #555;
 }
 
@@ -120,6 +146,11 @@ h1 {
   }
 
   #search-button {
+    padding: 8px 16px;
+    font-size: 16px;
+  }
+
+  #toggle-button {
     padding: 8px 16px;
     font-size: 16px;
   }
