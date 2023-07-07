@@ -14,8 +14,6 @@ The Weather App is a web application that allows users to retrieve current weath
 - OpenWeather API: Provides current weather, forecast, and historical weather data. Visit their [website](https://openweathermap.org/) for more information.
 - Unsplash API: Retrieves photos of cities based on the search query. For more details, refer to the [Unsplash API documentation](https://unsplash.com/documentation).
 
-## Prerequisites
-
 To use the historical weather feature, you need a subscription and an API key from OpenWeather. Visit the [OpenWeather History API](https://openweathermap.org/history) page for more information on accessing historical weather data.
 
 ## Setup
