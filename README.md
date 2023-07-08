@@ -1,8 +1,6 @@
 # Weather App
 
-The Weather App is a web application that allows users to retrieve current weather information and an 8-day forecast based on a provided ZIP code. Additionally, it offers the option to fetch historical weather data by inputting an API key (which requires a subscription) for access to OpenWeather's historical weather API.
-
-The app works with both US and Canadian ZIP Codes and also contains functionality to use the user's current location.  
+The Weather App is a web application that allows users to retrieve current weather information and an 8-day forecast based on a provided ZIP code. Additionally, it offers the option to fetch historical weather data by inputting an API key (which requires a subscription) for access to OpenWeather's historical weather API. The app works with both US and Canadian ZIP Codes and also contains functionality to use the user's current location.  
 
 ## Features
 
