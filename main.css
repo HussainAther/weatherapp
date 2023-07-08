@@ -11,7 +11,7 @@ h1 {
   font-size: 32px;
   font-weight: bold;
   text-transform: uppercase;
-  text-align: center; /* Center the title */
+  text-align: center; 
 }
 
 .container {
@@ -53,14 +53,14 @@ h1 {
 #toggle-container {
   display: flex;
   justify-content: center;
-  align-items: center; /* Center the temperature toggle button vertically */
+  align-items: center; 
   margin-top: 10px;
 }
 
 #geolocation-container {
   display: flex;
   justify-content: center;
-  align-items: center; /* Center the geolocation button vertically */
+  align-items: center; 
   margin-top: 10px;
 }
 
